@@ -9,7 +9,7 @@ int main() {
     string jsonOutput = R"({
         "title": "Project Workload",
         "labels": ["Core Logic", "UI/Gantt Charts", "Testing & Analysis"],
-        "data": [40, 40, 20]
+        "data": [40, 30, 30]
     })";
 
     // Write the JSON to a file
