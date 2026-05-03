@@ -4,24 +4,28 @@
 
 using namespace std;
 
-int main() {
+int main()
+{
     // Simulated core logic output
     string jsonOutput = R"({
         "title": "Project Workload",
         "labels": ["Core Logic", "UI/Gantt Charts", "Testing & Analysis"],
-        "data": [40, 30, 30]
+        "data": [50, 25, 25]
     })";
 
     // Write the JSON to a file
     ofstream outFile("chart_data.json");
-    if (outFile.is_open()) {
+    if (outFile.is_open())
+    {
         outFile << jsonOutput;
         outFile.close();
         cout << "Success: Generated chart_data.json in the current directory.\n";
-    } else {
+    }
+    else
+    {
         cerr << "Error: Unable to open file for writing.\n";
         return 1;
     }
-    
+
     return 0;
 }
