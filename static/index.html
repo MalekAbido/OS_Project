@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Real-Time CLI Pipeline</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body style="font-family: sans-serif; display: flex; flex-direction: column; align-items: center; margin-top: 50px;">
+
+    <h2>Real-Time C++ to HTML Pipeline</h2>
+    
+    <div style="margin-bottom: 20px;">
+        <input type="number" id="val1" value="45" style="width: 60px;">
+        <input type="number" id="val2" value="35" style="width: 60px;">
+        <input type="number" id="val3" value="20" style="width: 60px;">
+        <button onclick="updateChart()">Update Chart</button>
+    </div>
+
+    <div style="width: 400px;">
+        <canvas id="myChart"></canvas>
+    </div>
+
+    <script>
+        let myChart = null; // Store the chart instance so we can destroy it before redrawing
+
+        function updateChart() {
+            // Grab the numbers from the input boxes
+            const payload = {
+                val1: document.getElementById('val1').value,
+                val2: document.getElementById('val2').value,
+                val3: document.getElementById('val3').value
+            };
+
+            // Send them to the Flask server
+            fetch('/api/update-chart', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(response => response.json())
+            .then(jsonData => {
+                const ctx = document.getElementById('myChart');
+                
+                // Destroy the old chart if it exists
+                if (myChart) { myChart.destroy(); }
+                
+                // Draw the new chart with the data returned from C++
+                myChart = new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: jsonData.labels,
+                        datasets: [{
+                            label: jsonData.title,
+                            data: jsonData.data,
+                            backgroundColor: ['#ff6384', '#36a2eb', '#cc65fe']
+                        }]
+                    }
+                });
+            })
+            .catch(error => console.error('Error fetching from API:', error));
+        }
+
+        // Draw the initial chart when the page loads
+        window.onload = updateChart;
+    </script>
+</body>
+</html>

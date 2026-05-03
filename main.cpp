@@ -1,31 +1,26 @@
 #include <iostream>
-#include <fstream>
 #include <string>
-
-using namespace std;
+#include "include/json.hpp"
 
 int main()
 {
-    // Simulated core logic output
-    string jsonOutput = R"({
-        "title": "Project Workload",
-        "labels": ["Core Logic", "UI/Gantt Charts", "Testing & Analysis"],
-        "data": [50, 25, 25]
-    })";
+    int a, b, c;
 
-    // Write the JSON to a file
-    ofstream outFile("chart_data.json");
-    if (outFile.is_open())
+    // Read 3 integers from standard input
+    // If the input fails, we just default to some numbers
+    if (!(std::cin >> a >> b >> c))
     {
-        outFile << jsonOutput;
-        outFile.close();
-        cout << "Success: Generated chart_data.json in the current directory.\n";
+        a = 10;
+        b = 10;
+        c = 10;
     }
-    else
-    {
-        cerr << "Error: Unable to open file for writing.\n";
-        return 1;
-    }
+
+    // Print the JSON directly to standard output instead of a file
+    std::cout << R"({)" << "\n";
+    std::cout << R"(  "title": "Dynamic Project Workload",)" << "\n";
+    std::cout << R"(  "labels": ["Core Logic", "UI/Gantt", "Testing"],)" << "\n";
+    std::cout << R"(  "data": [)" << a << ", " << b << ", " << c << "]\n";
+    std::cout << R"(})" << "\n";
 
     return 0;
 }
