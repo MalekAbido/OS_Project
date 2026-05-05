@@ -13,36 +13,94 @@ exe_path = os.path.join("build", exe_name)
 if is_windows and not os.path.exists(exe_path):
     exe_path = os.path.join("build", "Debug", exe_name)
 
+
 @app.route('/')
 def index():
     # Serve the index.html file when someone visits localhost:5000
     return send_from_directory('static', 'index.html')
 
-@app.route('/api/update-chart', methods=['POST'])
-def update_chart():
-    # 1. Get the JSON data sent from the browser
-    user_data = request.json
-    
-    # 2. Format it into a simple string separated by spaces for C++ stdin
-    input_string = f"{user_data['val1']} {user_data['val2']} {user_data['val3']}\n"
-    
+
+@app.route('/api/simulate', methods=['POST'])
+def simulate():
+    """
+    Receives a JSON payload from the browser with the process workload,
+    passes it as a JSON string to the C++ scheduler engine via stdin,
+    and returns the scheduler's JSON output to the browser.
+
+    Expected Input JSON schema:
+    {
+      "time_quantum": int,
+      "priority_rule": "lower_is_higher" | "larger_is_higher",
+      "processes": [
+        { "process_id": str, "arrival_time": int, "burst_time": int, "priority": int },
+        ...
+      ]
+    }
+
+    Expected Output JSON schema (from C++ stdout):
+    {
+      "round_robin": {
+        "gantt_chart": [ { "process_id": str, "start_time": int, "end_time": int }, ... ],
+        "metrics":    [ { "process_id": str, "waiting_time": int, "turnaround_time": int, "response_time": int }, ... ],
+        "averages":   { "avg_wt": float, "avg_tat": float, "avg_rt": float }
+      },
+      "priority_preemptive": { ... same structure ... }
+    }
+    """
+    user_data = request.get_json(force=True)
+
+    if not user_data:
+        return jsonify({"error": "No JSON payload received."}), 400
+
+    # Serialize the entire payload to a JSON string and pass it to C++ via stdin
+    input_string = json.dumps(user_data)
+
     try:
-        # 3. Run the C++ executable, feed it the string, and grab the output
         result = subprocess.run(
-            [exe_path], 
-            input=input_string, 
-            text=True, 
-            capture_output=True, 
-            check=True
+            [exe_path],
+            input=input_string,
+            text=True,
+            capture_output=True,
+            timeout=10,          # Kill if C++ hangs for 10 seconds
+            check=True           # Raises CalledProcessError on non-zero exit code
         )
-        
-        # 4. The C++ printed a JSON string. Parse it and send it to the browser.
+
+        # The C++ engine prints the result JSON to stdout — parse and return it
         cpp_output_json = json.loads(result.stdout)
         return jsonify(cpp_output_json)
-        
+
+    except FileNotFoundError:
+        return jsonify({
+            "error": f"Scheduler executable not found at '{exe_path}'. "
+                     "Please build the C++ backend first: cd build && cmake --build ."
+        }), 500
+
+    except subprocess.CalledProcessError as e:
+        # C++ exited with a non-zero exit code — pass the stderr message to the UI
+        err_msg = e.stderr.strip() if e.stderr else "Unknown C++ runtime error."
+        return jsonify({"error": f"Scheduler engine error: {err_msg}"}), 500
+
+    except subprocess.TimeoutExpired:
+        return jsonify({"error": "Scheduler engine timed out after 10 seconds."}), 500
+
+    except json.JSONDecodeError as e:
+        raw = result.stdout[:500] if result.stdout else "(empty)"
+        return jsonify({
+            "error": f"Failed to parse scheduler output as JSON. "
+                     f"Parser said: {str(e)}. Raw output: {raw}"
+        }), 500
+
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": f"Unexpected server error: {str(e)}"}), 500
+
+
+# Keep the legacy endpoint so any existing bookmarks still work
+@app.route('/api/update-chart', methods=['POST'])
+def update_chart_legacy():
+    return jsonify({"error": "This endpoint is deprecated. Use /api/simulate instead."}), 410
+
 
 if __name__ == '__main__':
     print("🚀 Starting Flask API on http://localhost:5000")
+    print(f"   C++ executable path: {os.path.abspath(exe_path)}")
     app.run(debug=True, port=5000)

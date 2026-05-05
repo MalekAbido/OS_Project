@@ -1,0 +1,39 @@
+/* Custom scrollbar for Gantt overflow */
+.gantt-scroll::-webkit-scrollbar {
+  height: 8px;
+}
+.gantt-scroll::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+.gantt-scroll::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+.gantt-scroll::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Gantt block time labels sit below the bar */
+.gantt-bar {
+  position: relative;
+}
+.gantt-bar .time-label {
+  position: absolute;
+  bottom: -24px;
+  font-size: 0.7rem;
+  color: #64748b;
+  font-family: monospace;
+  white-space: nowrap;
+}
+.gantt-bar .time-label.left {
+  left: 0;
+  transform: translateX(-50%);
+}
+.gantt-bar .time-label.right {
+  right: 0;
+  transform: translateX(50%);
+}
+.gantt-wrapper {
+  padding-bottom: 28px;
+} /* room for labels */

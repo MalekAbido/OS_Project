@@ -1,67 +1,314 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Real-Time CLI Pipeline</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
-<body style="font-family: sans-serif; display: flex; flex-direction: column; align-items: center; margin-top: 50px;">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CPU Scheduling Simulator — OS Project C3</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+  <body class="bg-slate-50 text-slate-800 font-sans min-h-screen pb-12">
+    <!-- ===== HEADER ===== -->
+    <header class="bg-blue-600 text-white p-6 shadow-md mb-8">
+      <div class="max-w-6xl mx-auto flex justify-between items-center">
+        <div>
+          <h1 class="text-2xl font-bold tracking-tight">OS Project C3</h1>
+          <p class="text-blue-200 text-sm mt-1">
+            Round Robin vs Preemptive Priority Comparison
+          </p>
+        </div>
+      </div>
+    </header>
 
-    <h2>Real-Time C++ to HTML Pipeline</h2>
-    
-    <div style="margin-bottom: 20px;">
-        <input type="number" id="val1" value="45" style="width: 60px;">
-        <input type="number" id="val2" value="35" style="width: 60px;">
-        <input type="number" id="val3" value="20" style="width: 60px;">
-        <button onclick="updateChart()">Update Chart</button>
+    <div id="app-container" class="max-w-6xl mx-auto px-4">
+      <!-- ==========================================
+             VIEW 1: INPUT DASHBOARD
+             ========================================== -->
+      <div id="view-input" class="space-y-6 block">
+        <!-- Global Settings -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+          <h2 class="text-lg font-semibold border-b pb-2 mb-4">
+            <i class="fa-solid fa-sliders text-blue-500 mr-2"></i>Global
+            Parameters
+          </h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1">
+                Time Quantum
+                <span class="text-[10px] font-normal lowercase">(ms)</span>
+                <span class="text-slate-400 font-normal">(Round Robin)</span>
+              </label>
+              <input
+                type="number"
+                id="time_quantum"
+                min="1"
+                value="4"
+                oninput="clearErrorHighlight(this)"
+                class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1"
+                >Priority Rule</label
+              >
+              <select
+                id="priority_rule"
+                class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white"
+              >
+                <option value="lower_is_higher">
+                  Smaller value = Higher priority (1 is best)
+                </option>
+                <option value="larger_is_higher">
+                  Larger value = Higher priority (10 is best)
+                </option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Process Table -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+          <div class="flex justify-between items-center border-b pb-2 mb-4">
+            <h2 class="text-lg font-semibold">
+              <i class="fa-solid fa-list-ol text-blue-500 mr-2"></i>Workload
+              Configuration
+            </h2>
+            <button
+              onclick="addProcessRow()"
+              class="bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-1.5 rounded-lg text-sm font-medium transition flex items-center"
+            >
+              <i class="fa-solid fa-plus mr-1"></i> Add Process
+            </button>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr
+                  class="bg-slate-50 text-slate-500 text-sm uppercase tracking-wider"
+                >
+                  <th class="p-3 font-semibold rounded-tl-lg">Process ID</th>
+                  <th class="p-3 font-semibold">
+                    Arrival Time
+                    <span class="text-xs font-normal lowercase">(ms)</span>
+                  </th>
+                  <th class="p-3 font-semibold">
+                    Burst Time
+                    <span class="text-xs font-normal lowercase">(ms)</span>
+                  </th>
+                  <th class="p-3 font-semibold">Priority Value</th>
+                  <th class="p-3 font-semibold text-center rounded-tr-lg"></th>
+                </tr>
+              </thead>
+              <tbody id="process-tbody" class="divide-y divide-slate-100">
+                <!-- Rows injected by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Validation Error Alert (hidden by default) -->
+        <div
+          id="error-alert"
+          class="hidden bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg shadow-sm"
+        >
+          <div class="flex items-start">
+            <i
+              class="fa-solid fa-triangle-exclamation text-red-500 mr-3 mt-1"
+            ></i>
+            <div
+              id="error-text"
+              class="text-red-700 text-sm font-medium leading-relaxed"
+            >
+              Validation error message goes here.
+            </div>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="flex justify-end">
+          <button
+            id="btn-simulate"
+            onclick="triggerSimulation()"
+            class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-lg shadow-md transition flex items-center text-lg"
+          >
+            <span>Run Simulation</span>
+            <i class="fa-solid fa-play ml-2"></i>
+          </button>
+        </div>
+      </div>
+      <!-- end view-input -->
+
+      <!-- ==========================================
+             VIEW 2: RESULTS DASHBOARD
+             ========================================== -->
+      <div id="view-results" class="hidden space-y-8">
+        <div class="flex justify-between items-center mb-2">
+          <h2 class="text-2xl font-bold text-slate-800">Simulation Results</h2>
+          <button
+            onclick="showInputView()"
+            class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium py-2 px-4 rounded-lg transition flex items-center text-sm"
+          >
+            <i class="fa-solid fa-arrow-left mr-2"></i> Back to Edit Data
+          </button>
+        </div>
+
+        <!-- Comparison Summary Cards -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+          <h3 class="text-lg font-semibold border-b pb-2 mb-4">
+            <i class="fa-solid fa-scale-balanced text-blue-500 mr-2"></i>Metrics
+            Comparison (Averages)
+          </h3>
+          <div
+            class="grid grid-cols-1 md:grid-cols-3 gap-6"
+            id="comparison-cards-container"
+          >
+            <!-- Cards injected by JS -->
+          </div>
+        </div>
+
+        <!-- Algorithm Results Grid (RR vs Priority side-by-side) -->
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+          <!-- Round Robin Column -->
+          <div class="space-y-6">
+            <div
+              class="bg-white p-6 rounded-xl shadow-sm border border-blue-200 border-t-4 border-t-blue-500"
+            >
+              <h3 class="text-xl font-bold text-blue-700 mb-4">
+                Round Robin (RR)
+              </h3>
+
+              <h4
+                class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-2"
+              >
+                Gantt Chart
+              </h4>
+              <div
+                class="w-full bg-slate-50 border border-slate-200 rounded-lg p-4 overflow-x-auto gantt-scroll mb-8"
+              >
+                <div
+                  id="rr-gantt"
+                  class="flex relative min-w-[300px] h-12 gantt-wrapper"
+                >
+                  <!-- RR Gantt blocks injected by JS -->
+                </div>
+              </div>
+
+              <h4
+                class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-2"
+              >
+                Per-Process Metrics
+                <span class="text-[12px] font-normal lowercase">(ms)</span>
+              </h4>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm border-collapse">
+                  <thead>
+                    <tr class="bg-slate-100 text-slate-600">
+                      <th class="p-2 border-b">Process</th>
+                      <th class="p-2 border-b text-right">AT</th>
+                      <th class="p-2 border-b text-right">BT</th>
+                      <th class="p-2 border-b text-right">WT</th>
+                      <th class="p-2 border-b text-right">TAT</th>
+                      <th class="p-2 border-b text-right">RT</th>
+                    </tr>
+                  </thead>
+                  <tbody id="rr-metrics-body" class="divide-y divide-slate-100">
+                    <!-- Rows injected by JS -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Preemptive Priority Column -->
+          <div class="space-y-6">
+            <div
+              class="bg-white p-6 rounded-xl shadow-sm border border-emerald-200 border-t-4 border-t-emerald-500"
+            >
+              <h3 class="text-xl font-bold text-emerald-700 mb-4">
+                Preemptive Priority
+              </h3>
+
+              <h4
+                class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-2"
+              >
+                Gantt Chart
+              </h4>
+              <div
+                class="w-full bg-slate-50 border border-slate-200 rounded-lg p-4 overflow-x-auto gantt-scroll mb-8"
+              >
+                <div
+                  id="priority-gantt"
+                  class="flex relative min-w-[300px] h-12 gantt-wrapper"
+                >
+                  <!-- Priority Gantt blocks injected by JS -->
+                </div>
+              </div>
+
+              <h4
+                class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-2"
+              >
+                Per-Process Metrics
+              </h4>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm border-collapse">
+                  <thead>
+                    <tr class="bg-slate-100 text-slate-600">
+                      <th class="p-2 border-b">Process</th>
+                      <th class="p-2 border-b text-right">
+                        AT
+                        <span class="text-[10px] font-normal lowercase"
+                          >(ms)</span
+                        >
+                      </th>
+                      <th class="p-2 border-b text-right">
+                        BT
+                        <span class="text-[10px] font-normal lowercase"
+                          >(ms)</span
+                        >
+                      </th>
+                      <th class="p-2 border-b text-right">
+                        WT
+                        <span class="text-[10px] font-normal lowercase"
+                          >(ms)</span
+                        >
+                      </th>
+                      <th class="p-2 border-b text-right">
+                        TAT
+                        <span class="text-[10px] font-normal lowercase"
+                          >(ms)</span
+                        >
+                      </th>
+                      <th class="p-2 border-b text-right">
+                        RT
+                        <span class="text-[10px] font-normal lowercase"
+                          >(ms)</span
+                        >
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody
+                    id="priority-metrics-body"
+                    class="divide-y divide-slate-100"
+                  >
+                    <!-- Rows injected by JS -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- end grid -->
+      </div>
+      <!-- end view-results -->
     </div>
+    <!-- end app-container -->
 
-    <div style="width: 400px;">
-        <canvas id="myChart"></canvas>
-    </div>
-
-    <script>
-        let myChart = null; // Store the chart instance so we can destroy it before redrawing
-
-        function updateChart() {
-            // Grab the numbers from the input boxes
-            const payload = {
-                val1: document.getElementById('val1').value,
-                val2: document.getElementById('val2').value,
-                val3: document.getElementById('val3').value
-            };
-
-            // Send them to the Flask server
-            fetch('/api/update-chart', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            })
-            .then(response => response.json())
-            .then(jsonData => {
-                const ctx = document.getElementById('myChart');
-                
-                // Destroy the old chart if it exists
-                if (myChart) { myChart.destroy(); }
-                
-                // Draw the new chart with the data returned from C++
-                myChart = new Chart(ctx, {
-                    type: 'pie',
-                    data: {
-                        labels: jsonData.labels,
-                        datasets: [{
-                            label: jsonData.title,
-                            data: jsonData.data,
-                            backgroundColor: ['#ff6384', '#36a2eb', '#cc65fe']
-                        }]
-                    }
-                });
-            })
-            .catch(error => console.error('Error fetching from API:', error));
-        }
-
-        // Draw the initial chart when the page loads
-        window.onload = updateChart;
-    </script>
-</body>
+    <!-- ===== JAVASCRIPT ===== -->
+    <script src="/static/script.js"></script>
+  </body>
 </html>
