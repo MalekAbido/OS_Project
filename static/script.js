@@ -143,7 +143,7 @@ function triggerSimulation() {
 
   const payload = {
     time_quantum: Number(quantumRaw),
-    priority_rule: (priorityRule=="lower_is_higher" ? 0 : 1),
+    priority_rule: priorityRule,
     num_processes: rows.length,
     processes: [],
   };
@@ -203,7 +203,7 @@ function triggerSimulation() {
       if (!processColorMap[id]) {
         processColorMap[id] =
           processColors[
-            Object.keys(processColorMap).length % processColors.length
+          Object.keys(processColorMap).length % processColors.length
           ];
       }
       payload.processes.push({
@@ -234,164 +234,164 @@ function triggerSimulation() {
   );
 
   // MOCK DATA
-  
-  const MOCK_BACKEND_RESPONSE = {
-    round_robin: {
-      gantt_chart: [
-        { process_id: "P1", start_time: 0, end_time: 3 },
-        { process_id: "P2", start_time: 3, end_time: 6 },
-        { process_id: "P1", start_time: 6, end_time: 9 },
-        { process_id: "P3", start_time: 9, end_time: 11 },
-        { process_id: "P4", start_time: 11, end_time: 14 },
-        { process_id: "P2", start_time: 14, end_time: 15 },
-        { process_id: "P1", start_time: 15, end_time: 16 },
-        { process_id: "P5", start_time: 16, end_time: 19 },
-        { process_id: "P4", start_time: 19, end_time: 21 },
-        { process_id: "P6", start_time: 30, end_time: 32 },
-      ],
-      metrics: [
-        {
-          process_id: "P1",
-          waiting_time: 9,
-          turnaround_time: 16,
-          response_time: 0,
-        },
-        {
-          process_id: "P2",
-          waiting_time: 9,
-          turnaround_time: 13,
-          response_time: 1,
-        },
-        {
-          process_id: "P3",
-          waiting_time: 5,
-          turnaround_time: 7,
-          response_time: 5,
-        },
-        {
-          process_id: "P4",
-          waiting_time: 11,
-          turnaround_time: 16,
-          response_time: 6,
-        },
-        {
-          process_id: "P5",
-          waiting_time: 6,
-          turnaround_time: 9,
-          response_time: 6,
-        },
-        {
-          process_id: "P6",
-          waiting_time: 0,
-          turnaround_time: 2,
-          response_time: 0,
-        },
-      ],
-      averages: {
-        avg_wt: 6.67,
-        avg_tat: 10.5,
-        avg_rt: 3.0,
-      },
-    },
-    priority_preemptive: {
-      gantt_chart: [
-        { process_id: "P1", start_time: 0, end_time: 2 },
-        { process_id: "P2", start_time: 2, end_time: 6 },
-        { process_id: "P4", start_time: 6, end_time: 11 },
-        { process_id: "P1", start_time: 11, end_time: 16 },
-        { process_id: "P3", start_time: 16, end_time: 18 },
-        { process_id: "P5", start_time: 18, end_time: 21 },
-        { process_id: "P6", start_time: 30, end_time: 32 },
-      ],
-      metrics: [
-        {
-          process_id: "P1",
-          waiting_time: 9,
-          turnaround_time: 16,
-          response_time: 0,
-        },
-        {
-          process_id: "P2",
-          waiting_time: 0,
-          turnaround_time: 4,
-          response_time: 0,
-        },
-        {
-          process_id: "P3",
-          waiting_time: 12,
-          turnaround_time: 14,
-          response_time: 12,
-        },
-        {
-          process_id: "P4",
-          waiting_time: 1,
-          turnaround_time: 6,
-          response_time: 1,
-        },
-        {
-          process_id: "P5",
-          waiting_time: 8,
-          turnaround_time: 11,
-          response_time: 8,
-        },
-        {
-          process_id: "P6",
-          waiting_time: 0,
-          turnaround_time: 2,
-          response_time: 0,
-        },
-      ],
-      averages: {
-        avg_wt: 5.0,
-        avg_tat: 8.83,
-        avg_rt: 3.5,
-      },
-    },
-  };
 
-  setTimeout(() => {
-    processAndRenderResults(MOCK_BACKEND_RESPONSE);
-    const btn = document.getElementById("btn-simulate");
-    btn.innerHTML = `<span>Run Simulation</span><i class="fa-solid fa-play ml-2"></i>`;
-    btn.disabled = false;
-  }, 500); // 500ms delay to simulate network loading
+  // const MOCK_BACKEND_RESPONSE = {
+  //   round_robin: {
+  //     gantt_chart: [
+  //       { process_id: "P1", start_time: 0, end_time: 3 },
+  //       { process_id: "P2", start_time: 3, end_time: 6 },
+  //       { process_id: "P1", start_time: 6, end_time: 9 },
+  //       { process_id: "P3", start_time: 9, end_time: 11 },
+  //       { process_id: "P4", start_time: 11, end_time: 14 },
+  //       { process_id: "P2", start_time: 14, end_time: 15 },
+  //       { process_id: "P1", start_time: 15, end_time: 16 },
+  //       { process_id: "P5", start_time: 16, end_time: 19 },
+  //       { process_id: "P4", start_time: 19, end_time: 21 },
+  //       { process_id: "P6", start_time: 30, end_time: 32 },
+  //     ],
+  //     metrics: [
+  //       {
+  //         process_id: "P1",
+  //         waiting_time: 9,
+  //         turnaround_time: 16,
+  //         response_time: 0,
+  //       },
+  //       {
+  //         process_id: "P2",
+  //         waiting_time: 9,
+  //         turnaround_time: 13,
+  //         response_time: 1,
+  //       },
+  //       {
+  //         process_id: "P3",
+  //         waiting_time: 5,
+  //         turnaround_time: 7,
+  //         response_time: 5,
+  //       },
+  //       {
+  //         process_id: "P4",
+  //         waiting_time: 11,
+  //         turnaround_time: 16,
+  //         response_time: 6,
+  //       },
+  //       {
+  //         process_id: "P5",
+  //         waiting_time: 6,
+  //         turnaround_time: 9,
+  //         response_time: 6,
+  //       },
+  //       {
+  //         process_id: "P6",
+  //         waiting_time: 0,
+  //         turnaround_time: 2,
+  //         response_time: 0,
+  //       },
+  //     ],
+  //     averages: {
+  //       avg_wt: 6.67,
+  //       avg_tat: 10.5,
+  //       avg_rt: 3.0,
+  //     },
+  //   },
+  //   priority_preemptive: {
+  //     gantt_chart: [
+  //       { process_id: "P1", start_time: 0, end_time: 2 },
+  //       { process_id: "P2", start_time: 2, end_time: 6 },
+  //       { process_id: "P4", start_time: 6, end_time: 11 },
+  //       { process_id: "P1", start_time: 11, end_time: 16 },
+  //       { process_id: "P3", start_time: 16, end_time: 18 },
+  //       { process_id: "P5", start_time: 18, end_time: 21 },
+  //       { process_id: "P6", start_time: 30, end_time: 32 },
+  //     ],
+  //     metrics: [
+  //       {
+  //         process_id: "P1",
+  //         waiting_time: 9,
+  //         turnaround_time: 16,
+  //         response_time: 0,
+  //       },
+  //       {
+  //         process_id: "P2",
+  //         waiting_time: 0,
+  //         turnaround_time: 4,
+  //         response_time: 0,
+  //       },
+  //       {
+  //         process_id: "P3",
+  //         waiting_time: 12,
+  //         turnaround_time: 14,
+  //         response_time: 12,
+  //       },
+  //       {
+  //         process_id: "P4",
+  //         waiting_time: 1,
+  //         turnaround_time: 6,
+  //         response_time: 1,
+  //       },
+  //       {
+  //         process_id: "P5",
+  //         waiting_time: 8,
+  //         turnaround_time: 11,
+  //         response_time: 8,
+  //       },
+  //       {
+  //         process_id: "P6",
+  //         waiting_time: 0,
+  //         turnaround_time: 2,
+  //         response_time: 0,
+  //       },
+  //     ],
+  //     averages: {
+  //       avg_wt: 5.0,
+  //       avg_tat: 8.83,
+  //       avg_rt: 3.5,
+  //     },
+  //   },
+  // };
+
+  // setTimeout(() => {
+  //   processAndRenderResults(MOCK_BACKEND_RESPONSE);
+  //   const btn = document.getElementById("btn-simulate");
+  //   btn.innerHTML = `<span>Run Simulation</span><i class="fa-solid fa-play ml-2"></i>`;
+  //   btn.disabled = false;
+  // }, 500); // 500ms delay to simulate network loading
 
   // Connection with the Backend
 
-  // fetch("/api/simulate", {
-  //   method: "POST",
-  //   headers: { "Content-Type": "application/json" },
-  //   body: JSON.stringify(payload),
-  // })
-  //   .then((response) => {
-  //     if (!response.ok) {
-  //       return response.json().then((errData) => {
-  //         throw new Error(
-  //           errData.error || `Server returned HTTP ${response.status}`,
-  //         );
-  //       });
-  //     }
-  //     return response.json();
-  //   })
-  //   .then((data) => {
-  //     if (!data.round_robin || !data.priority_preemptive) {
-  //       throw new Error(
-  //         "Unexpected response format from scheduler. Check backend output.",
-  //       );
-  //     }
-  //     processAndRenderResults(data);
-  //   })
-  //   .catch((err) => {
-  //     const isNetworkError = err instanceof TypeError;
-  //     const msg = isNetworkError
-  //       ? "Cannot reach the Flask server. Make sure 'python app.py' is running."
-  //       : err.message;
-  //     showError(`<strong>Simulation failed:</strong> ${msg}`);
-  //   })
-  //   .finally(() => {
-  //     btn.innerHTML = `<span>Run Simulation</span><i class="fa-solid fa-play ml-2"></i>`;
-  //     btn.disabled = false;
-  //   });
+  fetch("/api/simulate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  })
+    .then((response) => {
+      if (!response.ok) {
+        return response.json().then((errData) => {
+          throw new Error(
+            errData.error || `Server returned HTTP ${response.status}`,
+          );
+        });
+      }
+      return response.json();
+    })
+    .then((data) => {
+      if (!data.round_robin || !data.priority_preemptive) {
+        throw new Error(
+          "Unexpected response format from scheduler. Check backend output.",
+        );
+      }
+      processAndRenderResults(data);
+    })
+    .catch((err) => {
+      const isNetworkError = err instanceof TypeError;
+      const msg = isNetworkError
+        ? "Cannot reach the Flask server. Make sure 'python app.py' is running."
+        : err.message;
+      showError(`<strong>Simulation failed:</strong> ${msg}`);
+    })
+    .finally(() => {
+      btn.innerHTML = `<span>Run Simulation</span><i class="fa-solid fa-play ml-2"></i>`;
+      btn.disabled = false;
+    });
 }
 
 // ─── 5. View Switching ────────────────────────────────────────────────────
