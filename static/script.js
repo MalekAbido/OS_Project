@@ -46,7 +46,7 @@ function addProcessRow(id = "", arrival = "", burst = "", priority = "") {
                                   focus:ring-1 focus:ring-blue-500 outline-none" placeholder="e.g. P1">
                 </td>
                 <td class="p-2">
-                    <input type="number" min="1" value="${arrival}" oninput="clearErrorHighlight(this)"
+                    <input type="number" min="0" value="${arrival}" oninput="clearErrorHighlight(this)"
                            class="proc-arrival w-full px-3 py-1.5 border border-slate-300 rounded
                                   focus:ring-1 focus:ring-blue-500 outline-none text-left">
                 </td>
@@ -484,14 +484,14 @@ function renderGantt(containerId, ganttData, totalTime) {
       idle.style.width = `${idlePct}%`;
 
       idle.innerHTML = `
-                <span class="text-xs text-slate-400 font-mono truncate px-1">IDLE</span>
-                <span class="absolute -bottom-1.5 right-0 w-px h-1.5 bg-slate-300"></span>
-                <span class="time-label right">${block.start_time}</span>`;
+                <span class="text-sm text-slate-400 font-mono truncate px-1">IDLE</span>
+                <span class="absolute -bottom-2 right-0 w-px h-2 bg-slate-300"></span>
+                <span class="time-label right font-bold text-slate-600 text-xm">${block.start_time}</span>`;
 
       if (index === 0) {
         idle.innerHTML += `
-                <span class="absolute -bottom-1.5 left-0 w-px h-1.5 bg-slate-300"></span>
-                <span class="time-label left">${cursor}</span>`;
+                <span class="absolute -bottom-2 left-0 w-px h-2 bg-slate-300"></span>
+                <span class="time-label left font-bold text-slate-600 text-xm">${cursor}</span>`;
       }
       container.appendChild(idle);
     }
@@ -502,25 +502,25 @@ function renderGantt(containerId, ganttData, totalTime) {
 
     const div = document.createElement("div");
     div.className = `gantt-bar ${color} border-r border-white/30 flex items-center justify-center
-                                 text-white font-bold text-xs shadow-inner relative
+                                 text-white font-bold text-sm shadow-inner relative
                                  transition-all hover:brightness-110`;
     div.style.width = `${pct}%`;
     div.title = `${block.process_id}: ${block.start_time} → ${block.end_time}`;
 
     // Added a tiny vertical tick mark to anchor the timestamp perfectly
     let labels = `
-            <span class="absolute -bottom-1.5 right-0 w-px h-1.5 bg-slate-400"></span>
-            <span class="time-label right">${block.end_time}</span>
+            <span class="absolute -bottom-2 right-0 w-px h-2 bg-slate-400"></span>
+            <span class="time-label right font-bold text-slate-600 text-xm">${block.end_time}</span>
           `;
 
     if (index === 0 && block.start_time === 0) {
       labels += `
-                <span class="absolute -bottom-1.5 left-0 w-px h-1.5 bg-slate-400"></span>
-                <span class="time-label left">0</span>
+                <span class="absolute -bottom-2 left-0 w-px h-2 bg-slate-400"></span>
+                <span class="time-label left font-bold text-slate-600 text-xm">0</span>
             `;
     }
 
-    div.innerHTML = `<span class="truncate px-1 relative z-10">${block.process_id}</span>${labels}`;
+    div.innerHTML = `<span class="truncate px-1 relative z-10 text-base">${block.process_id}</span>${labels}`;
     container.appendChild(div);
     cursor = block.end_time;
   });
@@ -565,3 +565,53 @@ function renderMetricsTable(tbodyId, metricsData) {
 }
 
 window.onload = init;
+
+// ─── 7. Test Scenarios ───────────────────────────────────────────────────
+async function loadScenario(filename) {
+  try {
+    const response = await fetch(`/test/${filename}`);
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    const data = await response.json();
+
+    // 1. Update Global Parameters
+    document.getElementById("time_quantum").value = data.time_quantum;
+
+    // Mapping: 0 -> lower_is_higher, 1 -> larger_is_higher
+    const ruleSelect = document.getElementById("priority_rule");
+    if (data.priority_rule === 0) {
+      ruleSelect.value = "lower_is_higher";
+    } else if (data.priority_rule === 1) {
+      ruleSelect.value = "larger_is_higher";
+    }
+
+    // 2. Clear existing process table
+    document.getElementById("process-tbody").innerHTML = "";
+
+    // 3. Rebuild table
+    data.processes.forEach((p) => {
+      addProcessRow(p.process_id, p.arrival_time, p.burst_time, p.priority);
+    });
+
+    hideError();
+    console.log(`Loaded scenario: ${filename}`);
+  } catch (err) {
+    console.error("Failed to load scenario:", err);
+    showError(
+      `<strong>Error:</strong> Could not load scenario ${filename}. ${err.message}`,
+    );
+  }
+}
+
+function resetFields() {
+  // 1. Reset Global Parameters
+  document.getElementById("time_quantum").value = 4;
+  document.getElementById("priority_rule").value = "lower_is_higher";
+
+  // 2. Clear table and add default row
+  document.getElementById("process-tbody").innerHTML = "";
+  addProcessRow("P1", 0, 1, 1);
+
+  hideError();
+  console.log("Fields reset to defaults.");
+}
+
