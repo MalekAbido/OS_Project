@@ -143,7 +143,7 @@ function triggerSimulation() {
 
   const payload = {
     time_quantum: Number(quantumRaw),
-    priority_rule: priorityRule,
+    priority_rule: (priorityRule=="lower_is_higher" ? 0 : 1),
     num_processes: rows.length,
     processes: [],
   };

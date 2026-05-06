@@ -1,10 +1,15 @@
 #include <iostream>
 #include <vector>
 #include <queue>
+#include "include/json.hpp"
 
 using namespace std;
+using json = nlohmann::json;
 
 int main() {
+    json input;
+    cin >> input;
+
     int n, time_quantum;
 
     cout << "Enter the total number of processes: ";

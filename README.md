@@ -86,7 +86,7 @@ For the frontend and backend teams to work independently, we enforce a strict JS
 ```
 {
   "time_quantum": 4,
-  "priority_rule": "lower_is_higher",
+  "priority_rule": 0, // 0="lower_is_higher", 1="larger_is_higher"
   "num_processes": 1, 
   "processes": [
     {
