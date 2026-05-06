@@ -136,6 +136,10 @@ For the frontend and backend teams to work independently, we enforce a strict JS
 
 ---
 
+## [Project Document](https://docs.google.com/document/d/1RxmlURjhDDVdvMoMfgOwmid1QUbdH0aRCojOlZzLFDQ/edit?tab=t.o2bidvta3cfm)
+
+---
+
 ## Required Test Scenarios
 
 **Global Configuration for all test scenarios:**
