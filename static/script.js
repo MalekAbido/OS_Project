@@ -220,6 +220,7 @@ function triggerSimulation() {
   }
 
   // Save the valid payload so we can look up AT and BT for the metrics table
+  payload.processes.sort((a, b) => a.arrival_time - b.arrival_time);
   currentPayload = payload;
 
   const btn = document.getElementById("btn-simulate");
