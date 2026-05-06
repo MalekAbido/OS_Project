@@ -6,7 +6,6 @@ import json
 
 app = Flask(__name__, static_folder='static')
 
-# Find the C++ executable path based on OS
 is_windows = platform.system() == "Windows"
 exe_name = "scheduler.exe" if is_windows else "scheduler"
 exe_path = os.path.join("build", exe_name)
@@ -16,7 +15,6 @@ if is_windows and not os.path.exists(exe_path):
 
 @app.route('/')
 def index():
-    # Serve the index.html file when someone visits localhost:5000
     return send_from_directory('static', 'index.html')
 
 
@@ -53,7 +51,6 @@ def simulate():
     if not user_data:
         return jsonify({"error": "No JSON payload received."}), 400
 
-    # Serialize the entire payload to a JSON string and pass it to C++ via stdin
     input_string = json.dumps(user_data)
 
     try:
@@ -62,11 +59,10 @@ def simulate():
             input=input_string,
             text=True,
             capture_output=True,
-            timeout=10,          # Kill if C++ hangs for 10 seconds
-            check=True           # Raises CalledProcessError on non-zero exit code
+            timeout=10,          
+            check=True           
         )
 
-        # The C++ engine prints the result JSON to stdout — parse and return it
         cpp_output_json = json.loads(result.stdout)
         return jsonify(cpp_output_json)
 
@@ -77,7 +73,6 @@ def simulate():
         }), 500
 
     except subprocess.CalledProcessError as e:
-        # C++ exited with a non-zero exit code — pass the stderr message to the UI
         err_msg = e.stderr.strip() if e.stderr else "Unknown C++ runtime error."
         return jsonify({"error": f"Scheduler engine error: {err_msg}"}), 500
 
@@ -95,7 +90,6 @@ def simulate():
         return jsonify({"error": f"Unexpected server error: {str(e)}"}), 500
 
 
-# Keep the legacy endpoint so any existing bookmarks still work
 @app.route('/api/update-chart', methods=['POST'])
 def update_chart_legacy():
     return jsonify({"error": "This endpoint is deprecated. Use /api/simulate instead."}), 410
