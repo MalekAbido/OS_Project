@@ -1,0 +1,10 @@
+{
+  "time_quantum": "abc",
+  "priority_rule": 0,
+  "num_processes": 2,
+  "processes": [
+    { "process_id": "P1", "arrival_time": 0, "burst_time": 5, "priority": 1 },
+    { "process_id": "P1", "arrival_time": 1, "burst_time": 4, "priority": 2 },
+    { "process_id": "P2", "arrival_time": 1, "burst_time": -3, "priority": 2 }
+  ]
+}

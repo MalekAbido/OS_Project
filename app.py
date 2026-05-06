@@ -18,6 +18,11 @@ def index():
     return send_from_directory('static', 'index.html')
 
 
+@app.route('/test/<path:filename>')
+def test_scenarios(filename):
+    return send_from_directory('test', filename)
+
+
 @app.route('/api/simulate', methods=['POST'])
 def simulate():
     """
