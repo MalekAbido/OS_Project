@@ -31,6 +31,7 @@ def simulate():
     {
       "time_quantum": int,
       "priority_rule": "lower_is_higher" | "larger_is_higher",
+      "num_processes": int,
       "processes": [
         { "process_id": str, "arrival_time": int, "burst_time": int, "priority": int },
         ...
