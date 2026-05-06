@@ -144,6 +144,7 @@ function triggerSimulation() {
   const payload = {
     time_quantum: Number(quantumRaw),
     priority_rule: priorityRule,
+    num_processes: rows.length,
     processes: [],
   };
   const idSet = new Set();
