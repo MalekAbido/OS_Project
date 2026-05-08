@@ -24,8 +24,8 @@ Every team member needs the following installed on their system (Windows or Linu
 ### 1. Clone the Repository
 
 ```
-git clone https://github.com/MalekAbido/OS_Project.git
-cd OS_Project
+git clone https://github.com/MalekAbido/Round-Robin-vs-Priority-Scheduling-Analysis.git
+cd Round-Robin-vs-Priority-Scheduling-Analysis
 
 ```
 
@@ -87,7 +87,6 @@ For the frontend and backend teams to work independently, we enforce a strict JS
 {
   "time_quantum": 4,
   "priority_rule": 0, // 0="lower_is_higher", 1="larger_is_higher"
-  "num_processes": 1,
   "processes": [
     {
       "process_id": "P1",
