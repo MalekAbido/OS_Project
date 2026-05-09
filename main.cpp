@@ -142,7 +142,7 @@ json priorityPreemptive(string priority_rule, vector<string> pids, vector<int> a
                         isBetter = true;
                 }
                 else
-                { // larger_is_higher
+                { 
                     if (pr[i] > currentHighestPriority)
                         isBetter = true;
                     else if (pr[i] == currentHighestPriority && at[i] < at[currentHighestPriorityIndex])
@@ -160,7 +160,7 @@ json priorityPreemptive(string priority_rule, vector<string> pids, vector<int> a
         if (currentHighestPriorityIndex == -1)
         {
             if (prev_process != -1)
-            { // Close the previous Gantt block if there was one
+            {
                 output_data["gantt_chart"].push_back({{"process_id", pids[prev_process]},
                                                       {"start_time", block_start_time},
                                                       {"end_time", currentTime}});
@@ -203,13 +203,11 @@ json priorityPreemptive(string priority_rule, vector<string> pids, vector<int> a
             total_wt += wt;
             total_rt += resp;
 
-            // Close off the final Gantt block for this process
             output_data["gantt_chart"].push_back({{"process_id", pids[idx]},
                                                   {"start_time", block_start_time},
                                                   {"end_time", currentTime}});
             prev_process = -1;
 
-            // Push directly to JSON (Inherently sorts by Completion Time)
             output_data["metrics"].push_back({{"process_id", pids[idx]},
                                               {"waiting_time", wt},
                                               {"turnaround_time", tat},
@@ -254,7 +252,7 @@ int main()
         pids[i] = processes_json[i]["process_id"];
         at[i] = processes_json[i]["arrival_time"];
         bt[i] = processes_json[i]["burst_time"];
-        pr[i] = processes_json[i]["priority"]; // Get Priority
+        pr[i] = processes_json[i]["priority"];
     }
 
     output_data["round_robin"] = roundRobin(time_quantum, pids, at, bt, bt);

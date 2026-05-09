@@ -101,6 +101,6 @@ def update_chart_legacy():
 
 
 if __name__ == '__main__':
-    print("🚀 Starting Flask API on http://localhost:5000")
+    print("Starting Flask API on http://localhost:5000")
     print(f"   C++ executable path: {os.path.abspath(exe_path)}")
     app.run(debug=True, port=5000)

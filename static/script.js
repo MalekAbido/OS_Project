@@ -1,8 +1,6 @@
-// ─── State ───────────────────────────────────────────────────────────────
 let processCounter = 1;
-let currentPayload = null; // Saves the input data to retrieve AT/BT later
+let currentPayload = null;
 
-// Color palette for Gantt chart process blocks
 const processColors = [
   "bg-blue-400",
   "bg-emerald-400",
@@ -15,9 +13,8 @@ const processColors = [
   "bg-orange-400",
   "bg-teal-400",
 ];
-const processColorMap = {}; // { "P1": "bg-blue-400", ... }
+const processColorMap = {};
 
-// ─── 1. Initialization ────────────────────────────────────────────────────
 function init() {
   addProcessRow("P1", 0, 7, 3);
   addProcessRow("P2", 2, 4, 1);
@@ -26,11 +23,9 @@ function init() {
   addProcessRow("P5", 10, 3, 5);
   addProcessRow("P6", 30, 2, 1);
 
-  // Also set Time Quantum to 3 for this scenario
   document.getElementById("time_quantum").value = 3;
 }
 
-// ─── 2. Row Management ────────────────────────────────────────────────────
 function addProcessRow(id = "", arrival = "", burst = "", priority = "") {
   const tbody = document.getElementById("process-tbody");
   const rowId = `row-${processCounter++}`;
@@ -79,7 +74,6 @@ function removeRow(rowId) {
   document.getElementById(rowId).remove();
 }
 
-// ─── 3. Validation UI Helpers ─────────────────────────────────────────────
 function showError(msgHTML) {
   const alert = document.getElementById("error-alert");
   document.getElementById("error-text").innerHTML = msgHTML;
@@ -116,24 +110,26 @@ function containsLetters(val) {
   return /[a-zA-Z]/.test(val);
 }
 
-// ─── 4. Validation & Simulation Trigger ───────────────────────────────────
 function triggerSimulation() {
   hideError();
   clearAllValidationHighlights();
 
   let errors = [];
 
-  // Validate global fields
   const quantumInput = document.getElementById("time_quantum");
   const quantumRaw = quantumInput.value.trim();
   const priorityRule = document.getElementById("priority_rule").value;
 
   if (containsLetters(quantumRaw)) {
     setInvalid(quantumInput);
-    errors.push("<strong>Global:</strong> Time Quantum contains letters. Please enter numbers only.");
+    errors.push(
+      "<strong>Global:</strong> Time Quantum contains letters. Please enter numbers only.",
+    );
   } else if (!quantumRaw || !isNumeric(quantumRaw) || Number(quantumRaw) <= 0) {
     setInvalid(quantumInput);
-    errors.push("<strong>Global:</strong> Time Quantum must be a positive integer greater than 0.");
+    errors.push(
+      "<strong>Global:</strong> Time Quantum must be a positive integer greater than 0.",
+    );
   }
 
   const rows = document.querySelectorAll("#process-tbody tr");
@@ -189,21 +185,23 @@ function triggerSimulation() {
     if (containsLetters(priority)) {
       setInvalid(priorityInput);
       rowErrors.push("Priority contains letters (should have numbers only)");
-    } else if (priority === "" || !isNumeric(priority) || Number(priority) < 1) {
+    } else if (
+      priority === "" ||
+      !isNumeric(priority) ||
+      Number(priority) < 1
+    ) {
       setInvalid(priorityInput);
       rowErrors.push("Invalid Priority Time (must be number ≥ 1)");
     }
 
     if (rowErrors.length > 0) {
-      errors.push(
-        `<strong>Row ${i + 1}:</strong> ${rowErrors.join(", ")}`,
-      );
+      errors.push(`<strong>Row ${i + 1}:</strong> ${rowErrors.join(", ")}`);
     } else {
       idSet.add(id);
       if (!processColorMap[id]) {
         processColorMap[id] =
           processColors[
-          Object.keys(processColorMap).length % processColors.length
+            Object.keys(processColorMap).length % processColors.length
           ];
       }
       payload.processes.push({
@@ -220,7 +218,6 @@ function triggerSimulation() {
     return showError(formattedErrors);
   }
 
-  // Save the valid payload so we can look up AT and BT for the metrics table
   payload.processes.sort((a, b) => a.arrival_time - b.arrival_time);
   currentPayload = payload;
 
@@ -228,135 +225,7 @@ function triggerSimulation() {
   btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin mr-2"></i> Simulating...`;
   btn.disabled = true;
 
-  console.log(
-    "Sending to /api/simulate:",
-    JSON.stringify(payload, null, 2),
-  );
-
-  // MOCK DATA
-
-  // const MOCK_BACKEND_RESPONSE = {
-  //   round_robin: {
-  //     gantt_chart: [
-  //       { process_id: "P1", start_time: 0, end_time: 3 },
-  //       { process_id: "P2", start_time: 3, end_time: 6 },
-  //       { process_id: "P1", start_time: 6, end_time: 9 },
-  //       { process_id: "P3", start_time: 9, end_time: 11 },
-  //       { process_id: "P4", start_time: 11, end_time: 14 },
-  //       { process_id: "P2", start_time: 14, end_time: 15 },
-  //       { process_id: "P1", start_time: 15, end_time: 16 },
-  //       { process_id: "P5", start_time: 16, end_time: 19 },
-  //       { process_id: "P4", start_time: 19, end_time: 21 },
-  //       { process_id: "P6", start_time: 30, end_time: 32 },
-  //     ],
-  //     metrics: [
-  //       {
-  //         process_id: "P1",
-  //         waiting_time: 9,
-  //         turnaround_time: 16,
-  //         response_time: 0,
-  //       },
-  //       {
-  //         process_id: "P2",
-  //         waiting_time: 9,
-  //         turnaround_time: 13,
-  //         response_time: 1,
-  //       },
-  //       {
-  //         process_id: "P3",
-  //         waiting_time: 5,
-  //         turnaround_time: 7,
-  //         response_time: 5,
-  //       },
-  //       {
-  //         process_id: "P4",
-  //         waiting_time: 11,
-  //         turnaround_time: 16,
-  //         response_time: 6,
-  //       },
-  //       {
-  //         process_id: "P5",
-  //         waiting_time: 6,
-  //         turnaround_time: 9,
-  //         response_time: 6,
-  //       },
-  //       {
-  //         process_id: "P6",
-  //         waiting_time: 0,
-  //         turnaround_time: 2,
-  //         response_time: 0,
-  //       },
-  //     ],
-  //     averages: {
-  //       avg_wt: 6.67,
-  //       avg_tat: 10.5,
-  //       avg_rt: 3.0,
-  //     },
-  //   },
-  //   priority_preemptive: {
-  //     gantt_chart: [
-  //       { process_id: "P1", start_time: 0, end_time: 2 },
-  //       { process_id: "P2", start_time: 2, end_time: 6 },
-  //       { process_id: "P4", start_time: 6, end_time: 11 },
-  //       { process_id: "P1", start_time: 11, end_time: 16 },
-  //       { process_id: "P3", start_time: 16, end_time: 18 },
-  //       { process_id: "P5", start_time: 18, end_time: 21 },
-  //       { process_id: "P6", start_time: 30, end_time: 32 },
-  //     ],
-  //     metrics: [
-  //       {
-  //         process_id: "P1",
-  //         waiting_time: 9,
-  //         turnaround_time: 16,
-  //         response_time: 0,
-  //       },
-  //       {
-  //         process_id: "P2",
-  //         waiting_time: 0,
-  //         turnaround_time: 4,
-  //         response_time: 0,
-  //       },
-  //       {
-  //         process_id: "P3",
-  //         waiting_time: 12,
-  //         turnaround_time: 14,
-  //         response_time: 12,
-  //       },
-  //       {
-  //         process_id: "P4",
-  //         waiting_time: 1,
-  //         turnaround_time: 6,
-  //         response_time: 1,
-  //       },
-  //       {
-  //         process_id: "P5",
-  //         waiting_time: 8,
-  //         turnaround_time: 11,
-  //         response_time: 8,
-  //       },
-  //       {
-  //         process_id: "P6",
-  //         waiting_time: 0,
-  //         turnaround_time: 2,
-  //         response_time: 0,
-  //       },
-  //     ],
-  //     averages: {
-  //       avg_wt: 5.0,
-  //       avg_tat: 8.83,
-  //       avg_rt: 3.5,
-  //     },
-  //   },
-  // };
-
-  // setTimeout(() => {
-  //   processAndRenderResults(MOCK_BACKEND_RESPONSE);
-  //   const btn = document.getElementById("btn-simulate");
-  //   btn.innerHTML = `<span>Run Simulation</span><i class="fa-solid fa-play ml-2"></i>`;
-  //   btn.disabled = false;
-  // }, 500); // 500ms delay to simulate network loading
-
-  // Connection with the Backend
+  console.log("Sending to /api/simulate:", JSON.stringify(payload, null, 2));
 
   fetch("/api/simulate", {
     method: "POST",
@@ -394,7 +263,6 @@ function triggerSimulation() {
     });
 }
 
-// ─── 5. View Switching ────────────────────────────────────────────────────
 function showInputView() {
   document.getElementById("view-results").classList.add("hidden");
   document.getElementById("view-input").classList.remove("hidden");
@@ -406,7 +274,6 @@ function showResultsView() {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-// ─── 6. Rendering ─────────────────────────────────────────────────────────
 function processAndRenderResults(data) {
   renderComparisonCards(
     data.round_robin.averages,
@@ -429,10 +296,7 @@ function processAndRenderResults(data) {
     data.priority_preemptive.gantt_chart,
     globalMax,
   );
-  renderMetricsTable(
-    "priority-metrics-body",
-    data.priority_preemptive.metrics,
-  );
+  renderMetricsTable("priority-metrics-body", data.priority_preemptive.metrics);
 
   showResultsView();
 }
@@ -507,7 +371,6 @@ function renderGantt(containerId, ganttData, totalTime) {
     div.style.width = `${pct}%`;
     div.title = `${block.process_id}: ${block.start_time} → ${block.end_time}`;
 
-    // Added a tiny vertical tick mark to anchor the timestamp perfectly
     let labels = `
             <span class="absolute -bottom-2 right-0 w-px h-2 bg-slate-400"></span>
             <span class="time-label right font-bold text-slate-600 text-xm">${block.end_time}</span>
@@ -534,7 +397,6 @@ function renderMetricsTable(tbodyId, metricsData) {
   metricsData.forEach((m) => {
     const color = processColorMap[m.process_id] || "bg-slate-400";
 
-    // Lookup Arrival Time and Burst Time from the original payload
     let at = "-",
       bt = "-";
     if (currentPayload && currentPayload.processes) {
@@ -566,17 +428,14 @@ function renderMetricsTable(tbodyId, metricsData) {
 
 window.onload = init;
 
-// ─── 7. Test Scenarios ───────────────────────────────────────────────────
 async function loadScenario(filename) {
   try {
     const response = await fetch(`/test/${filename}`);
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     const data = await response.json();
 
-    // 1. Update Global Parameters
     document.getElementById("time_quantum").value = data.time_quantum;
 
-    // Mapping: 0 -> lower_is_higher, 1 -> larger_is_higher
     const ruleSelect = document.getElementById("priority_rule");
     if (data.priority_rule === 0) {
       ruleSelect.value = "lower_is_higher";
@@ -584,10 +443,8 @@ async function loadScenario(filename) {
       ruleSelect.value = "larger_is_higher";
     }
 
-    // 2. Clear existing process table
     document.getElementById("process-tbody").innerHTML = "";
 
-    // 3. Rebuild table
     data.processes.forEach((p) => {
       addProcessRow(p.process_id, p.arrival_time, p.burst_time, p.priority);
     });
@@ -603,15 +460,12 @@ async function loadScenario(filename) {
 }
 
 function resetFields() {
-  // 1. Reset Global Parameters
   document.getElementById("time_quantum").value = 4;
   document.getElementById("priority_rule").value = "lower_is_higher";
 
-  // 2. Clear table and add default row
   document.getElementById("process-tbody").innerHTML = "";
   addProcessRow("P1", 0, 1, 1);
 
   hideError();
   console.log("Fields reset to defaults.");
 }
-
