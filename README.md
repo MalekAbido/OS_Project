@@ -139,6 +139,41 @@ For the frontend and backend teams to work independently, we enforce a strict JS
 
 ---
 
+## Scheduling Algorithms & Metrics Calculations
+
+### Scheduling Algorithms
+
+- **Round Robin (RR)**
+  A preemptive algorithm that cycles CPU access among processes using a fixed Time Quantum.
+  - **Time Quantum:** The maximum continuous time a process can occupy the CPU before preemption.
+  - **Queue Rotation:** Processes are managed in a circular FIFO queue. Upon quantum expiration, the running process is moved to the tail, and the next process at the head is allocated the CPU.
+  - **Arrival Handling:** Processes arriving during a context switch are appended to the ready queue; if a process is preempted at the same instant a new one arrives, the new arrival is typically queued first to maintain fairness.
+
+- **Preemptive Priority**
+  An algorithm that ensures the process with the highest priority level (implementation-defined as either the lowest or highest numerical value) always has CPU control.
+  - **Preemption:** If a newly arrived process has a higher priority than the currently executing one, the scheduler immediately preempts the running task and switches context to the new process.
+  - **Resumption:** Preempted processes return to the ready queue and resume execution only when they once again hold the highest priority among all ready tasks.
+
+### Metrics Calculations
+
+The simulator evaluates performance using the following standard mathematical formulas:
+
+- **Turnaround Time (TAT)**
+  The total time elapsed from process arrival to completion.
+
+  > **TAT = Completion Time - Arrival Time**
+
+- **Waiting Time (WT)**
+  The total time a process spends in the ready queue without CPU execution.
+
+  > **WT = Turnaround Time - Burst Time**
+
+- **Response Time (RT)**
+  The duration between process arrival and the first instance of CPU allocation.
+  > **RT = First CPU Allocation Time - Arrival Time**
+
+---
+
 ## Required Test Scenarios
 
 **Global Configuration for all test scenarios:**
